@@ -1,0 +1,8 @@
+---
+title: "Files"
+output: html_document
+---
+
+```{r}
+files <- list.files(path = file.path(getwd(), "data"))
+```
