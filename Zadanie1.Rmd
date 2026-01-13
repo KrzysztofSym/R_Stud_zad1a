@@ -6,3 +6,76 @@ output: html_document
 ```{r}
 files <- list.files(path = file.path(getwd(), "data"))
 ```
+Zad. 1
+```{r}
+r <- 0.05
+n <- 10
+K <- 1000
+# 1. Wysokość oprocentowania miesięcznego q
+q <- 1 + r/12
+# 2. Wysokość raty miesięcznej R
+R <- K * q^n * (q-1)/(q^n - 1); R
+# 3. Całkowita kwota do spłaty F
+F <- R * n; F
+# Wyświetlanie wyników
+cat("Miesięczne oprocentowanie (q):", q, "\n")
+cat("Miesięczna rata (R):", R, "\n")
+cat("Całkowita kwota do spłaty (F):", F, "\n")
+```
+Zad. 2
+```{r}
+i <- 1:n
+# 1. Wysokość części kapitałowej raty R0
+R0 <- K/n
+# 2. Wysokość części odsetkowej raty i-tej Ri1
+Ri1 <- ((K-(i-1)*R0)*r)/12; Ri1
+# 3. Wysokość raty i-tej Ri
+Ri = R0 + Ri1; Ri
+# 4. Całkowita kwotę do spłaty Fc
+Fc = sum(Ri); Fc
+# Najniższa, średnia i najwyższa wartość raty:
+Fc_min = min(Ri)
+Fc_mean = mean(Ri)
+Fc_max = max(Ri)
+```
+Zad. 3
+```{r}
+wig <- readRDS('wig_changes.rds'); wig
+head(wig)
+table(wig)
+?table()
+prev_state <- wig[-length(wig)]   # dzień-1 (bez ostatniego)
+next_state <- wig[-1]             # dzień (bez pierwszego)
+prev_state <- factor(prev_state, levels = c("+", "-"))
+next_state <- factor(next_state, levels = c("+", "-"))
+transitions <- table(prev_state, next_state)
+transitions
+P <- prop.table(transitions, margin = 1)
+P
+P3 <- P %*% P %*% P    # macierzowo, suma wierszy przy prawdopodobieństwie równa 1
+P3
+```
+
+Zad. 4a
+```{r}
+# Parametry
+N <- 100    # liczba klientów
+K <- 10     # wysokość składki
+T <- 12     # liczba miesięcy
+
+# Inicjalizacja wektora na rezerwy
+S <- numeric(T)
+
+# Obliczanie rezerw na wypłatę
+for (t in 1:T) {
+  if (t == 1) {
+    S[t] <- K * N
+  } else {
+    S[t] <- S[t-1] + K * N
+  }
+}
+# Wyświetlenie wyników
+cat("Wartość rezerwy na wypłaty w poszczególnych miesiącach:", S)
+
+
+```
