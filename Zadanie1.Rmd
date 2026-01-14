@@ -58,24 +58,75 @@ P3
 
 Zad. 4a
 ```{r}
-# Parametry
-N <- 100    # liczba klientów
+# Parametry założone
+N <- 100    # początkowa liczba klientów
 K <- 10     # wysokość składki
-T <- 12     # liczba miesięcy
+F <- 500    # wysokość odszkodowania
+T <- 12     # okres symulacji (miesiące)
 
-# Inicjalizacja wektora na rezerwy
-S <- numeric(T)
+# Przygotowanie struktur do zapisywania wyników
+S_historia <- numeric(T)  # Historia rezerw
+N_historia <- numeric(T)  # Historia liczby klientów
+bankructwo <- FALSE
 
-# Obliczanie rezerw na wypłatę
-for (t in 1:T) {
+# 1. Przyjmij t = 1
+t <- 1
+
+# 7. Pętla realizująca przejście t <= T
+while (t <= T) {
+  
+  # 2. Wyznacz rezerwę na wypłaty St
   if (t == 1) {
-    S[t] <- K * N
+    St <- K * N
   } else {
-    S[t] <- S[t-1] + K * N
+    # St_poprzednie to wartość rezerwy po wszystkich operacjach z poprzedniego miesiąca
+    St <- St_poprzednie + K * N
   }
+  
+  # 3.: Wyznacz liczbę wypłat 'a'
+  threshold <- qt(0.9999, df = 2) # kwantyl z treści zadania
+  c_n <- rt(N, df = 2)           # losowanie dla każdego z N klientów
+  a <- sum(c_n >= threshold)
+  
+  # 4. Wypłać odszkodowania
+  St <- St - a * F
+  
+  # 5. Sprawdź płynność
+  if (St >= 0) {
+    # 5.1: Jeżeli spełnione, zmodyfikuj liczbę ubezpieczonych
+    n <- sample(0:100, 1)        # nowi klienci
+    o <- sample(0:90, 1)         # rezygnujący
+    
+    # Aktualizacja N: obecni + nowi - rezygnujący - ci co dostali wypłatę
+    N <- max(0, N + n - o - a)
+    
+    # Zapisujemy stany do historii
+    S_historia[t] <- St
+    N_historia[t] <- N
+    St_poprzednie <- St # zapamiętujemy stan kasy na początek kolejnego miesiąca
+    
+  } else {
+    # 5.2: Jeżeli nie spełnione, firma zbankrutowała
+    S_historia[t] <- St
+    cat("Firma zbankrutowała w miesiącu:", t, "\n")
+    bankructwo <- TRUE
+    break # Zatrzymanie algorytmu przed czasem
+  }
+  
+  # 6. Przyjmij t = t + 1
+  t <- t + 1
 }
-# Wyświetlenie wyników
-cat("Wartość rezerwy na wypłaty w poszczególnych miesiącach:", S)
 
+# Podsumowanie
+if (!bankructwo) {
+  cat("Symulacja zakończona sukcesem po", T, "miesiącach.\n")
+}
 
+# Wyniki w formie tabeli dla przejrzystości (tylko dla miesięcy, które się odbyły)
+wyniki <- data.frame(
+  Miesiac = 1:min(t, T),
+  Rezerwa_St = S_historia[1:min(t, T)],
+  Liczba_Klientow = N_historia[1:min(t, T)]
+)
+print(wyniki)
 ```
