@@ -130,3 +130,120 @@ wyniki <- data.frame(
 )
 print(wyniki)
 ```
+Zad. 4b
+```{r}
+# 1. Funkcja symulacji ubezpieczenia
+  N0 <- 100   # początkowa liczba klientów
+  K <- 10    # składka
+  F <- 500   # odszkodowanie
+  T <- 12     # liczba miesięcy
+
+symulacja_ubezpieczenia <- function(N, K, F, T) {
+  
+  S_historia <- numeric(T)
+  N_historia <- numeric(T)
+  
+  St_poprzednie <- 0
+  
+  for (t in 1:T) {
+    
+    # 2. Rezerwa przed wypłatami
+    if (t == 1) {
+      St <- K * N
+    } else {
+      St <- St_poprzednie + K * N
+    }
+    
+    # 3. Liczba wypłat a
+    threshold <- qt(0.9999, df = 2)
+    c_n <- rt(N, df = 2)
+    a <- sum(c_n >= threshold)
+    
+    # 4. Wypłaty
+    St <- St - a * F
+    
+    # 5. Sprawdzenie płynności
+    if (St < 0) {
+      S_historia[t:T] <- NA
+      break
+    }
+    
+    # 5.1 Zmiana liczby klientów
+    n <- sample(0:100, 1)
+    o <- sample(0:90, 1)
+    N <- max(0, N + n - o - a)
+    
+    # Zapis
+    S_historia[t] <- St
+    N_historia[t] <- N
+    St_poprzednie <- St
+  }
+  
+  return(S_historia)
+}
+
+# Wywołanie
+symulacja_ubezpieczenia(N0, K, F, T)
+
+# 2. Macierz SIM
+M <- 10
+T <- 12
+
+SIM <- matrix(NA, nrow = M, ncol = T)
+
+for (m in 1:M) {
+  SIM[m, ] <- symulacja_ubezpieczenia(N0, K, F, T)
+}; SIM
+
+# 3.1 Prawdopodobieństwo, że spółka nie zbankrutuje do chwili t
+p_survival <- numeric(T)
+
+# SIM[, t] – rezerwy w miesiącu t
+# !is.na() – firma nie zbankrutowała
+
+for (t in 1:T) {
+  p_survival[t] <- mean(!is.na(SIM[, t]))
+}
+
+p_survival
+
+# 3.2 Średni poziom rezerw pod warunkiem braku bankructwa
+mean_reserves <- numeric(T)
+
+for (t in 1:T) {
+  mean_reserves[t] <- mean(SIM[, t], na.rm = TRUE)
+}
+
+mean_reserves
+
+# 3.3 Oczekiwany okres życia spółki (max T)
+czas_zycia <- numeric(M)
+
+for (m in 1:M) {
+  if (any(is.na(SIM[m, ]))) {
+    czas_zycia[m] <- which(is.na(SIM[m, ]))[1] - 1
+  } else {
+    czas_zycia[m] <- T
+  }
+}
+
+mean(czas_zycia)
+```
+Zad. 5
+```{r}
+wiek_k <- readRDS('age.rds')
+# 1. Najmłodszy i najstarszy klient
+# sum(is.na(wiek_k)) #53 klientów - brak danych
+najmlodszy <- min(wiek_k, na.rm = TRUE); najmlodszy
+najstarszy <- max(wiek_k, na.rm = TRUE); najstarszy
+cat("Najmłodszy klient ma",najmlodszy,", a najstarszy",najstarszy,"lat.")
+# 2. Przeciętny wiek
+sr_wiek <- round(mean(wiek_k, na.rm = TRUE)); sr_wiek
+cat("Przeciętny wiek klienta banku to",sr_wiek,"lat.")
+# 3. Zróżnicowanie wieku klientów
+odchylenie <- round(sd(wiek_k, na.rm = TRUE)); odchylenie
+cat("Zróżnicowanie klientów banku pod względem wieku (zostało opisane za pomocą (obliczone jako odchylenie standardowe) wynosi około",odchylenie,"lat.")
+# 4. Ilu klientów jest niepełnoletnich i jaki to % całości
+niepelnoletni <- sum(wiek_k < 18, na.rm = TRUE); niepelnoletni
+odsetek_niepelnoletnich <- niepelnoletni / sum(wiek_k, na.rm = TRUE) * 100; odsetek_niepelnoletnich
+```
