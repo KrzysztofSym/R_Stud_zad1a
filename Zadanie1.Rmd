@@ -243,7 +243,17 @@ cat("Przeciętny wiek klienta banku to",sr_wiek,"lat.")
 # 3. Zróżnicowanie wieku klientów
 odchylenie <- round(sd(wiek_k, na.rm = TRUE)); odchylenie
 cat("Zróżnicowanie klientów banku pod względem wieku (zostało opisane za pomocą (obliczone jako odchylenie standardowe) wynosi około",odchylenie,"lat.")
-# 4. Ilu klientów jest niepełnoletnich i jaki to % całości
+# 4. Ilu klientów jest niepełnoletnich i jaki to % całości?
 niepelnoletni <- sum(wiek_k < 18, na.rm = TRUE); niepelnoletni
-odsetek_niepelnoletnich <- niepelnoletni / sum(wiek_k, na.rm = TRUE) * 100; odsetek_niepelnoletnich
+wszyscy <- length(wiek_k)
+odsetek_niepelnoletnich <- (niepelnoletni / wszyscy*100); odsetek_niepelnoletnich
+cat("Klientów niepełnoletnich jest",niepelnoletni,"i stanowi to",odsetek_niepelnoletnich,"%.")
+# 5. Ilu klientów jest w wieku 30-50 lat i jaki to % całości?
+wiek_30_50 <- sum(wiek_k > 30 & wiek_k < 50, na.rm = TRUE); wiek_30_50
+odsetek_30_50 <- wiek_30_50 / wszyscy *100; odsetek_30_50
+cat("Klientów w wieku miedży 30 a 50 lat jest",wiek_30_50," co stanowi",odsetek_30_50,"%.")
+# 6 Ilu klientów nie podało wieku i jaki to % całości?
+wiek_na <- sum(is.na(wiek_k)); wiek_na
+odsetek_na <- wiek_na / wszyscy *100; odsetek_na
+cat("Klientów którzy nie podali wieku jest",wiek_na,"co stanowi",odsetek_na,"%.")
 ```
