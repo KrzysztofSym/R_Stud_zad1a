@@ -288,3 +288,14 @@ model$residuals
 # 4. Wartości dopasowanego R2
 model$adj.r.squared
 ```
+Zad.7
+```{r}
+ugly_diamonds <- read.csv("ugly_diamonds.csv", sep = "%", skip = 3, header = TRUE, stringsAsFactors = FALSE, na.strings = "Brak Danych", dec = ",")
+str(ugly_diamonds)
+```
+Zad.8
+```{r}
+dane_z8 <- readRDS("bank_register.rds")
+str(dane_z8)
+head(dane_z8)
+```
