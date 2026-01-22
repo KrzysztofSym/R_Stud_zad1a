@@ -252,8 +252,39 @@ cat("Klientów niepełnoletnich jest",niepelnoletni,"i stanowi to",odsetek_niepe
 wiek_30_50 <- sum(wiek_k > 30 & wiek_k < 50, na.rm = TRUE); wiek_30_50
 odsetek_30_50 <- wiek_30_50 / wszyscy *100; odsetek_30_50
 cat("Klientów w wieku miedży 30 a 50 lat jest",wiek_30_50," co stanowi",odsetek_30_50,"%.")
-# 6 Ilu klientów nie podało wieku i jaki to % całości?
+# 6. Ilu klientów nie podało wieku i jaki to % całości?
 wiek_na <- sum(is.na(wiek_k)); wiek_na
 odsetek_na <- wiek_na / wszyscy *100; odsetek_na
 cat("Klientów którzy nie podali wieku jest",wiek_na,"co stanowi",odsetek_na,"%.")
+# 7. Ilu klientów bank posiada w poszczególnych przedziałach wiekowych i jaki to % całości?
+seg <- cut(
+  wiek_k,
+  breaks = c(16, 18, 25, 35, 45, 65, Inf),
+  right = FALSE,
+  labels = c("[16-17]", "[18-24]", "[25-34]", "[35-44]", "[45-65]", "[65+]")
+)
+segment_klientow <- table(seg)
+procent_klientow <- round(prop.table(segment_klientow) * 100, 2)
+wynik <- data.frame(
+  przedzial_wiekowy = names(segment_klientow),
+  liczba_klientow = as.vector(segment_klientow),
+  procent = as.vector(procent_klientow)
+)
+wynik
+```
+Zad.6
+```{r}
+ctl <- c(4.17, 5.58, 5.18, 6.11, 4.50, 4.61, 5.17, 4.53, 5.33, 5.14)
+trt <- c(4.81, 4.17, 4.41, 3.59, 5.87, 3.83, 6.03, 4.89, 4.32, 4.69)
+group <- gl(2, 10, 20, labels = c("Ctl", "Trt"))
+weight <- c(ctl, trt)
+model <- summary(lm(weight ~ group))
+# 1. Struktura obiektu model
+str(model)
+# 2. Współczynniki modelu
+model$coefficients
+# 3. Wartości resztowe modelu
+model$residuals
+# 4. Wartości dopasowanego R2
+model$adj.r.squared
 ```
