@@ -295,7 +295,89 @@ str(ugly_diamonds)
 ```
 Zad.8
 ```{r}
+dane_z8_test <- readRDS("bank_register.rds")
+str(dane_z8_test)
+# pozycja kolumny id
+i <- match("id", names(dane_z8_test))
+tmp <- strsplit(dane_z8_test$id, "_")
+head(tmp)
+# kontrola
+stopifnot(length(i) == 1, !is.na(i))
+# nowe kolumny _id w miejsce poprzedniej id
+dane_z8_test <- cbind(
+dane_z8_test[, seq_len(i-1), drop=FALSE],
+client_id = as.integer(sapply(tmp, `[`, 1)),
+agreement_id = as.integer(sapply(tmp, `[`, 2)),
+dane_z8_test[, (i+1):ncol(dane_z8_test), drop=FALSE]
+)
+head(dane_z8_test)
+
+```
+```{r}
 dane_z8 <- readRDS("bank_register.rds")
-str(dane_z8)
+library(data.table)
+
+# przykładowa tabela
+setDT(dane_z8)
+
+# rozdziel id na client_id i agreement_id
+dane_z8[, c("client_id", "agreement_id") := tstrsplit(id, "_", fixed = TRUE, keep = 1:2)]
+
+# zapisz wszystkie nazwy kolumn poza id
+cols_before <- names(dane_z8)
+cols_before <- setdiff(cols_before, c("id"))  # id jeszcze istnieje tu?
+
+# usuń starą kolumnę id
+dane_z8[, id := NULL]
+
+# teraz ustaw kolejność: client_id i agreement_id tam, gdzie była id
+# znajdź miejsce starego id w pierwotnych kolumnach
+i <- match("id", names(dane_z8))  # po usunięciu id da NA, więc używamy wcześniej
+#i <- 1  # jeśli id była pierwszą kolumną
+# reszta kolumn bez nowych
+rest <- setdiff(names(dane_z8), c("client_id", "agreement_id"))
+
+# finalna kolejność — bez pustych indeksów
+dane_z8 <- dane_z8[, c("client_id", "agreement_id", rest), with = FALSE]
+
+# Zmiana formatu daty
+dane_z8$date <- as.Date(dane_z8$date, format = "%b %d, %Y")
+# Zmiana formatu dochodu na walutowy
+dane_z8$income <- as.numeric(
+  gsub(",", ".", gsub("\\.", "", gsub("\\$", "", dane_z8$income)))
+)
+
+# Podział na płeć, wiek i dzieci
+setDT(dane_z8)
+
+# zapisanie nazwy kolumny, która była PO demographic
+after_col <- names(dane_z8)[match("demographic", names(dane_z8)) + 1]
+
+# rozdzielelnie demographic na sex, age i child
+dane_z8[, c("sex", "age", "child") := tstrsplit(demographic, ",", fixed = TRUE, keep = 1:3)]
+
+# usunięcie istniejącą kolumnę demographic
+dane_z8[, demographic := NULL]
+
+# przestawienie nowych kolumn w miejsce usuniętej
+setcolorder(
+  dane_z8,
+  c("sex", "age", "child"),
+  before = after_col
+)
+
+# rozdzielenie kolumny products na 3 części
+dane_z8[, c("dep", "cre", "mor") := .(
+  grepl("\\bDEP\\b", products),
+  grepl("\\bCRE\\b", products),
+  grepl("\\bMOR\\b", products)
+)]
+# usunięcie kolumny products
+dane_z8[, products := NULL]
+
 head(dane_z8)
+```
+Zad. 9
+```{r}
+
 ```
