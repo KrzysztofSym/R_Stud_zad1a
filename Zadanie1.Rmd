@@ -379,5 +379,8 @@ head(dane_z8)
 ```
 Zad. 9
 ```{r}
-
+albums <- read.csv("albums.csv")
+head(albums)
+lapply(albums[, c('num_of_tracks', 'num_of_sales', 'rolling_stone_critic', 'mtv_critic', 'music_maniac_critic')], summary)
+str(albums)
 ```
